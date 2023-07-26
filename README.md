@@ -15,5 +15,7 @@ When a user registers he is instantly put in the group CUSTOMER, so he cannot en
 
 See it for yourself, It's pretty cool.
 
+It has no venv set up. Set a virtual env yourself. 
+
 
 
