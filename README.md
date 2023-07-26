@@ -19,5 +19,7 @@ See it for yourself, It's pretty cool.
 
 It has no venv set up. Set a virtual env yourself. 
 
+Thanks to https://github.com/TheRealStemarMan <- for the Front End part. Huge HTML and CSS help. The backend python part is entirely from me.
+
 
 
