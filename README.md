@@ -1,6 +1,8 @@
 # TheMannStore
 My site for SoftUni Python Framework 2023
 
+In short, it's a shopping site. The admins add products to their main page, and registered users can purchase these items. They purchase the item by adding to their cart, checking out with fake credit card, and then they can watch the status of their ordered items. The Admin changes the status, is it delivered, is it pending etc..
+
 This project runs locally on your own machine, when installed. The requirements are in the requirements.txt file.
 It is not hosted due to extreme Windows errors that prevent any hosting on AWS successful. Very unfortunate. 
 
