@@ -17,7 +17,7 @@ from .forms import PaymentForm, AddressForm
 
 
 # 1st help-up function
-# This function is present alot in the views. If it's not in the view, the cart items don't show up.
+# This function is present alot in the views. If it's not in the view, the cart items don't show up as a number in the cart box. 
 def get_product_count_in_cart(request):
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
