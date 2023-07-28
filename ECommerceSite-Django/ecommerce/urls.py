@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from ecommerce.ecom import views
 from ecommerce.ecom.views import CustomLoginView, Custom_Admin_LoginView, CustomLogoutView, IndexView, SearchView, \
-    SendFeedbackView
+    SendFeedbackView, PaymentView
 
 handler404 = 'ecommerce.ecom.views.custom_404_view'
 
@@ -49,5 +49,5 @@ urlpatterns = [
     path('remove-from-cart/<int:pk>', views.remove_from_cart_view, name='remove-from-cart'),
     path('customer-address', views.customer_address_view, name='customer-address'),
     path('payment-success', views.payment_success_view, name='payment-success'),
-    path('payment', views.payment_view, name='payment_view')
+    path('payment', PaymentView.as_view(), name='payment_view')
 ]
