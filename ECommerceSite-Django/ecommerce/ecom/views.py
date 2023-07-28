@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, FormView
 from . import forms, models
@@ -17,7 +18,7 @@ from .forms import PaymentForm, AddressForm
 
 
 # 1st help-up function
-# This function is present alot in the views. If it's not in the view, the cart items don't show up as a number in the cart box. 
+# This function is present alot in the views. If it's not in the view, the cart items don't show up.
 def get_product_count_in_cart(request):
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
@@ -431,10 +432,13 @@ def remove_from_cart_view(request, pk):
 
 
 # The customer can send a feedback to the admin(s)
-class SendFeedbackView(FormView):
+class SendFeedbackView(UserPassesTestMixin, FormView):
     template_name = 'random/send_feedback.html'
     form_class = forms.FeedbackForm
     success_url = 'feedback-sent'
+
+    def test_func(self):
+        return is_customer(self.request.user)
 
     def form_valid(self, form):
         form.save()
@@ -460,6 +464,7 @@ class SendFeedbackView(FormView):
             return self.form_invalid(feedback_form)
 
 
+@login_required(login_url='customer_login')
 def feedback_sent(request):
     product_count_in_cart = get_product_count_in_cart(request)
     return render(request, 'random/feedback_sent.html',
@@ -508,30 +513,39 @@ def customer_address_view(request):
                    'product_count_in_cart': product_count_in_cart})
 
 
-def payment_view(request):
-    email = None
-    mobile = None
-    address = None
+class PaymentView(UserPassesTestMixin, TemplateView):
+    template_name = 'random/payment.html'
 
-    if 'email' in request.COOKIES:
-        email = request.COOKIES['email']
-    if 'mobile' in request.COOKIES:
-        mobile = request.COOKIES['mobile']
-    if 'address' in request.COOKIES:
-        address = request.COOKIES['address']
+    def test_func(self):
+        return is_customer(self.request.user)
 
-    if request.method == 'POST':
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        email = self.request.COOKIES.get('email')
+        mobile = self.request.COOKIES.get('mobile')
+        address = self.request.COOKIES.get('address')
+        total = calculate_total_from_cookies(self.request)
+        product_count_in_cart = get_product_count_in_cart(self.request)
+        payment_form = PaymentForm()
+        context.update({
+            'address': address,
+            'email': email,
+            'mobile': mobile,
+            'payment_form': payment_form,
+            'total': total,
+            'product_count_in_cart': product_count_in_cart,
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
         payment_form = PaymentForm(request.POST)
         if payment_form.is_valid():
             response = redirect('payment-success')
             return response
-    else:
-        payment_form = PaymentForm()
-    total = calculate_total_from_cookies(request)
-    product_count_in_cart = get_product_count_in_cart(request)
-    return render(request, 'random/payment.html',
-                  {'address': address, 'email': email, 'mobile': mobile, 'payment_form': payment_form, 'total': total,
-                   'product_count_in_cart': product_count_in_cart})
+        else:
+            context = self.get_context_data(**kwargs)
+            context['payment_form'] = payment_form
+            return render(request, self.template_name, context)
 
 
 @login_required(login_url='customer_login')
@@ -660,6 +674,7 @@ def edit_profile_view(request):
 # -----------------------------------------------------------
 
 
+@login_required(login_url='customer_login')
 def about_us_view(request):
     products = models.Product.objects.all()
     product_count_in_cart = get_product_count_in_cart(request)
